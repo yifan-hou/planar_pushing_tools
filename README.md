@@ -1,13 +1,13 @@
 # Tools for Planar Pushing
 
 ## Usage
-**demo_controller_simple.py**
-Test planar pushing.
+**demo_planars.py**
+Test planar pushing planars.
 * Model learning
 * Compares planning with DDP vs. Dubin's path.
 
-**demo_controller.py**
-Test planar pushing under varying contact model.
+**demo_online_learning_replanning.py**
+Test planar pushing under time-varying contact model.
 * Model learning
 * Planning with DDP
 * Closed loop control

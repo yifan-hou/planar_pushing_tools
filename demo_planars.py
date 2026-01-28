@@ -7,52 +7,51 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-from close_loop_pushing.config import OptsModel, set_contact_model_b, get_contact_model_b
-from close_loop_pushing.model import f_
-from close_loop_pushing.push_planner import PushPlanner
-from close_loop_pushing.push_planner_dubin import PushPlannerDubin
-from close_loop_pushing.push_learner import PushLearner
-from close_loop_pushing.push_animation import PushAnimation
+from planar_pushing_tools.config import OptsModel, set_contact_model_b, get_contact_model_b
+from planar_pushing_tools.model import f_
+from planar_pushing_tools.push_planner import PushPlanner
+from planar_pushing_tools.push_planner_dubin import PushPlannerDubin
+from planar_pushing_tools.push_learner import PushLearner
+from planar_pushing_tools.push_animation import PushAnimation
 
 
 def main():
     # ---------------------------------------------------------
-    #       Simulation parameters
+    #       Simulation settings
     # ---------------------------------------------------------
-    N = 200    # length of simulation
     NH = 200   # length of horizon
-    T = 0.1
+    T = 0.1    # duration of a time step
     N_initial = 6  # number of probing steps for model learning
 
     # ---------------------------------------------------------
+    #       Task setup
+    # ---------------------------------------------------------
+    x0 = np.array([-21.4 / 1000, -279.7 / 1000, 0.0]) # initial pose (x, y, theta)
+    xstar = np.array([166.4 / 1000, -332.0 / 1000, 1.57]) # goal pose (x, y, theta)
+    
+    # ---------------------------------------------------------
     #       Model parameter
     # ---------------------------------------------------------
-    x0 = np.array([-21.4 / 1000, -279.7 / 1000, 0.0])
-    xstar = np.array([166.4 / 1000, -332.0 / 1000, 1.57])
-    pt = np.array([-35.0 / 2 / 1000, 0.0])
-    rho = 0.02
-    c = np.array([-pt[1] / rho, pt[0] / rho, -1.0])
-
-    # Fixed contact model (equal blend of A1 and A2)
-    A1 = np.array([
-        [0.8381,  -0.2401, -0.0076],
-        [-0.2401,  0.7016,  0.1892],
-        [-0.0076,  0.1892,  0.5717],
-    ])
-    A2 = np.array([
-        [1.0123,  0.1024, 0.3921],
-        [0.1024,  1.0030, 0.1976],
-        [0.3921,  0.1976, 1.4629],
-    ])
-    A = A1 * 0.5 + A2 * 0.5
-    b_true = np.linalg.solve(A, c)
-    b_true = b_true / np.linalg.norm(b_true)
-
+    # pushing action limits for DDP planner
     u_limit_ang = np.array([-65, 65]) * np.pi / 180
     u_limit_mag = np.array([0, 0.08])
 
     # Friction coefficient for Dubins planner
     mu = 0.3
+
+    # point of contact in object local frame
+    pt = np.array([-35.0 / 2 / 1000, 0.0])
+    
+    # Fixed contact model
+    A = np.array([
+        [0.8381,  -0.2401, -0.0076],
+        [-0.2401,  0.7016,  0.1892],
+        [-0.0076,  0.1892,  0.5717],
+    ])
+    rho = 0.02
+    c = np.array([-pt[1] / rho, pt[0] / rho, -1.0])
+    b_true = np.linalg.solve(A, c)
+    b_true = b_true / np.linalg.norm(b_true)
 
     # ---------------------------------------------------------
     #       Planner parameter

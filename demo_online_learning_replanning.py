@@ -3,51 +3,61 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from close_loop_pushing.config import OptsModel, set_contact_model_b, get_contact_model_b
-from close_loop_pushing.model import f_
-from close_loop_pushing.push_planner import PushPlanner
-from close_loop_pushing.push_learner import PushLearner
-from close_loop_pushing.push_decision import PushDecision
-from close_loop_pushing.push_animation import PushAnimation
+from planar_pushing_tools.config import OptsModel, set_contact_model_b, get_contact_model_b
+from planar_pushing_tools.model import f_
+from planar_pushing_tools.push_planner import PushPlanner
+from planar_pushing_tools.push_learner import PushLearner
+from planar_pushing_tools.push_decision import PushDecision
+from planar_pushing_tools.push_animation import PushAnimation
 
 
 def main():
     # ---------------------------------------------------------
-    #       Simulation parameters
+    #       Simulation settings
     # ---------------------------------------------------------
     N = 200    # length of simulation
     NH = 200   # length of horizon
     T = 0.1    # timestep
+    
+    # ---------------------------------------------------------
+    #       Task setup
+    # ---------------------------------------------------------
+    x0 = np.array([-21.4 / 1000, -300. / 1000, 0]) # initial pose (x, y, theta)
+    xstar = np.array([166.4 / 1000, -290.0 / 1000, 0.5]) # goal pose (x, y, theta)
 
     # ---------------------------------------------------------
     #       Model parameter
     # ---------------------------------------------------------
-    x0 = np.array([-21.4 / 1000, -300. / 1000, 0])
-    xstar = np.array([166.4 / 1000, -290.0 / 1000, 1.5])
-    pt = np.array([-35.0 / 2 / 1000, 0.0]) # point of contact in the local frame
-    rho = 0.04
-    c = np.array([-pt[1] / rho, pt[0] / rho, -1.0])
+    # pushing action limits for DDP planner
+    u_limit_ang = np.array([-40, 40]) * np.pi / 180 # pushing angle limit
+    u_limit_mag = np.array([0, 0.08])
 
+    # point of contact in the local frame
+    pt = np.array([-35.0 / 2 / 1000, 0.0])
+
+    # Varying contact model between two extremes
     A1 = np.array([
-        [0.8381,  -0.2401, -0.0076],
-        [-0.2401,  0.7016,  0.1892],
-        [-0.0076,  0.1892,  0.5717],
+        [0.8381,  -0.0401, -0.0076],
+        [-0.0401,  0.7016,  0.0892],
+        [-0.0076,  0.0892,  0.5717],
     ])
 
     A2 = np.array([
-        [1.0123,  0.1024, 0.3921],
-        [0.1024,  1.0030, 0.1976],
-        [0.3921,  0.1976, 1.4629],
+        [1.0123,  0.1024, 0.0921],
+        [0.1024,  1.0030, 0.076],
+        [0.0921,  0.076, 1.4629],
     ])
 
-    KA = 0.5 * np.ones(N)
+    KA = np.arange(N) / (N - 1)  # blending factor from A1 to A2
+
+    rho = 0.04
+    c = np.array([-pt[1] / rho, pt[0] / rho, -1.0])
 
     A = A1 * KA[0] + A2 * (1 - KA[0])
     b = np.linalg.solve(A, c)
     b = b / np.linalg.norm(b)
 
-    u_limit_ang = np.array([-65, 65]) * np.pi / 180 # pushing angle limit
-    u_limit_mag = np.array([0, 0.08])
+
 
     # ---------------------------------------------------------
     #       Planner parameter
