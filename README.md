@@ -14,6 +14,9 @@ Test planar pushing under varying contact model.
 * Handles modeling learning, planning and control with PushDecision class
 
 
+## License
+This repository is released under the MIT license. 
+
 ## Citation
 The methods in this repo is an implementation of 
 ```bibtex
@@ -34,11 +37,3 @@ This package is created by merging and translating the original matlab-based pac
 * [DDP](https://github.com/yifan-hou/DDP) for implementation of differential dynamic programming
 * [PlanarManipulationToolBox](https://github.com/robinzhoucmu/PlanarManipulationToolBox/blob/master/differential_flat/demo_plan_dubin_rect.m) for Dubin's curve computation, and differential flatness of pushing
 
-
-## License
-This repository is released under the MIT license. 
-
-## Acknowledgement
-We would like to thank Mengda Xu, Huy Ha, Zhenjia Xu, for their advice on the development of this codebase.
-
-## Code References
